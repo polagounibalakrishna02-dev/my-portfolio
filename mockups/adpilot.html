@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AdPilot — Creative editor</title>
+<style>
+@font-face{font-family:"Archivo";src:url("../node_modules/@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2") format("woff2");font-weight:100 900;font-stretch:62% 125%;font-display:block}
+@font-face{font-family:"JetBrains Mono";src:url("../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 800;font-display:block}
+@font-face{font-family:"Anton";src:url("../node_modules/@fontsource/anton/files/anton-latin-400-normal.woff2") format("woff2");font-weight:400;font-display:block}
+:root{
+  --bg:#f6f5f2;--panel:#ffffff;--sunk:#efeee9;--canvas:#e9e8e3;
+  --ink:#141414;--tx2:#55544f;--tx3:#8b8983;--tx4:#b5b3ac;
+  --line:rgba(20,20,20,.08);--line2:rgba(20,20,20,.14);
+  --amb:#f5b70a;--ambd:#b98500;--ambbg:#fff5d6;
+  --ok:#14a06a;--okbg:#e3f5ec;--err:#d9452b;--errbg:#fde9e4;--blue:#3a63d8;
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1280px;height:800px;overflow:hidden;background:var(--bg)}
+body{font-family:"Archivo",sans-serif;font-size:13px;line-height:1.45;color:var(--ink);-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1}
+svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{display:grid;grid-template-columns:56px 166px 1fr 320px;grid-template-rows:48px 44px 1fr 28px;height:800px}
+
+/* top bar */
+.top{grid-column:1/5;display:flex;align-items:stretch;background:var(--panel);border-bottom:1px solid var(--line)}
+.brand{width:222px;display:flex;align-items:center;gap:10px;padding:0 14px;border-right:1px solid var(--line)}
+.mark{width:26px;height:26px;border-radius:7px;background:var(--ink);display:grid;place-items:center}
+.mark svg{width:16px;height:16px}
+.brand b{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.brand small{font-family:var(--mono);font-size:10px;color:var(--tx3);border:1px solid var(--line2);border-radius:4px;padding:0 5px;line-height:16px;margin-left:2px}
+.tabs{display:flex;align-items:flex-end;gap:2px;padding:0 10px}
+.tab{display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:500;color:var(--tx2);white-space:nowrap;border:1px solid transparent;border-bottom:0;position:relative}
+.tab.on{background:var(--bg);border-color:var(--line);color:var(--ink);font-weight:600}
+.tab.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--bg)}
+.ft{font-family:var(--mono);font-size:8.5px;font-weight:700;color:#fff;border-radius:3px;padding:0 4px;line-height:15px;letter-spacing:.02em}
+.tab .x{color:var(--tx4);margin-left:4px;font-size:13px}
+.tab.add{color:var(--tx3);padding:0 10px}
+.top .r{margin-left:auto;display:flex;align-items:center;gap:12px;padding:0 14px}
+.saved{font-family:var(--mono);font-size:10.5px;color:var(--tx3);display:flex;align-items:center;gap:6px}
+.saved i{width:6px;height:6px;border-radius:50%;background:var(--ok)}
+.avs{display:flex}
+.av{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;border:2px solid #fff;margin-left:-7px}
+.btn{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:8px;font-size:12.5px;font-weight:600;border:1px solid var(--line2);background:#fff;color:var(--ink);white-space:nowrap}
+.btn.ink{background:var(--ink);border-color:var(--ink);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.15) inset,0 4px 12px rgba(20,20,20,.18)}
+.btn.amb{background:var(--amb);border-color:#e0a600;color:var(--ink);box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 4px 12px rgba(245,183,10,.3)}
+
+/* sub bar */
+.sub{grid-column:2/5;grid-row:2;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+.crumb{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--tx3);white-space:nowrap}
+.crumb b{color:var(--ink);font-weight:600}
+.seg{display:flex;border:1px solid var(--line2);border-radius:8px;background:#fff;padding:2px;gap:2px}
+.seg span{display:flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:6px;font-size:12px;color:var(--tx2);white-space:nowrap}
+.seg span.on{background:var(--ink);color:#fff}
+.sub .mid{margin-left:auto;display:flex;align-items:center;gap:10px}
+.tog{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2);white-space:nowrap}
+.sw{width:28px;height:16px;border-radius:9px;background:var(--amb);position:relative;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sw::after{content:"";position:absolute;right:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.zoom{display:flex;align-items:center;gap:6px;height:28px;padding:0 8px;border:1px solid var(--line2);border-radius:8px;background:#fff;font-family:var(--mono);font-size:11px;color:var(--ink)}
+.zoom span{color:var(--tx3)}
+
+/* tool rail */
+.rail{grid-column:1;grid-row:2/4;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px}
+.tl{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;color:var(--tx2);position:relative}
+.tl.on{background:var(--ambbg);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(245,183,10,.55)}
+.tl svg{width:18px;height:18px}
+.tl .k{position:absolute;right:3px;bottom:2px;font-family:var(--mono);font-size:7.5px;color:var(--tx4)}
+.rail hr{width:24px;border:0;border-top:1px solid var(--line);margin:6px 0}
+.rail .b{margin-top:auto}
+
+/* pages */
+.pages{grid-column:2;grid-row:3;background:var(--bg);border-right:1px solid var(--line);padding:16px 14px 0;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600}
+.ph span{font-family:var(--mono);font-size:10.5px;color:var(--tx3);font-weight:400}
+.pg{display:flex;gap:8px;align-items:flex-start}
+.pg .n{font-family:var(--mono);font-size:10px;color:var(--tx3);width:12px;padding-top:2px}
+.pp{width:118px;height:150px;background:#fff;border-radius:4px;box-shadow:0 0 0 1px var(--line),0 2px 6px rgba(0,0,0,.05);padding:12px 11px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.pg.on .pp{box-shadow:0 0 0 2px var(--amb),0 4px 12px rgba(245,183,10,.25)}
+.pg.on .n{color:var(--ink);font-weight:700}
+.ln{height:3px;border-radius:2px;background:#e4e3de}
+.ln.h{height:6px;background:#2a2a2a;width:70%;margin-bottom:3px}
+
+/* canvas */
+.canvas{grid-column:3;grid-row:3;position:relative;background-color:var(--canvas);background-image:radial-gradient(rgba(20,20,20,.13) 1px,transparent 1.2px);background-size:16px 16px;overflow:hidden;display:flex;flex-direction:column}
+.stage{flex:1;position:relative}
+.ab-title{position:absolute;left:calc(50% - 164px);top:12px;font-size:11.5px;color:var(--tx2);font-weight:600;display:flex;gap:8px;white-space:nowrap}
+.ab-title span{font-family:var(--mono);font-weight:400;color:var(--tx3);font-size:10.5px}
+.abwrap{position:absolute;left:calc(50% - 228px);top:36px;width:456px;height:570px;transform:scale(.72);transform-origin:50% 0}
+.ab{position:absolute;left:0;top:0;width:456px;height:570px;overflow:hidden;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 24px 60px -20px rgba(30,20,60,.45),0 8px 20px rgba(0,0,0,.08);
+  background:linear-gradient(180deg,#24124a 0%,#4a1f5c 34%,#a4365e 58%,#f06a3e 70.5%,#ffb15a 70.6%,#1c1140 70.7%,#120b2e 100%)}
+.ab .brandrow{position:absolute;left:24px;right:24px;top:20px;display:flex;justify-content:space-between;align-items:center;color:#fff1d6}
+.ab .brandrow b{font-weight:800;font-stretch:125%;font-size:11.5px;letter-spacing:.22em}
+.ab .brandrow span{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;opacity:.7}
+.headline{position:absolute;left:0;right:0;top:42px;text-align:center;font-family:"Anton";font-size:104px;line-height:.9;color:#fff1d6;letter-spacing:.005em;text-shadow:0 4px 30px rgba(255,90,60,.35)}
+.sunclip{position:absolute;left:0;right:0;top:0;height:403px;overflow:hidden}
+.sun{position:absolute;width:290px;height:290px;left:83px;top:168px;border-radius:50%;
+  background:linear-gradient(180deg,#ffe98a 0%,#ffc04a 30%,#ff7a3d 62%,#ff3f6c 100%);
+  -webkit-mask-image:linear-gradient(#000 0 58%,transparent 58% 61%,#000 61% 68%,transparent 68% 72.5%,#000 72.5% 79%,transparent 79% 84.5%,#000 84.5% 90%,transparent 90% 97%,#000 97%);
+  box-shadow:0 0 120px rgba(255,140,60,.6)}
+.glow{position:absolute;width:420px;height:420px;left:18px;top:96px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,150,80,.38),transparent)}
+.sea{position:absolute;left:0;right:0;top:403px;height:167px}
+.sea i{position:absolute;left:50%;height:3px;border-radius:2px;background:#ff9b52;transform:translateX(-50%)}
+.shades{position:absolute;left:83px;top:262px;width:290px}
+.badge{position:absolute;left:334px;top:316px;width:106px;height:106px;border-radius:50%;background:var(--amb);color:#141414;transform:rotate(-12deg);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(0,0,0,.35),inset 0 0 0 3px rgba(255,255,255,.35),inset 0 0 0 6px var(--amb),inset 0 0 0 7px rgba(20,20,20,.5)}
+.badge small{font-weight:800;font-stretch:115%;font-size:10px;letter-spacing:.14em}
+.badge b{font-family:"Anton";font-size:42px;line-height:.95;font-weight:400}
+.ab .bottom{position:absolute;left:24px;right:24px;bottom:28px;display:flex;align-items:flex-end;justify-content:space-between;color:#fff1d6}
+.ab .bottom b{display:block;font-weight:700;font-size:17px;letter-spacing:-.01em}
+.ab .bottom div span{display:block;margin-top:3px;font-family:var(--mono);font-size:10px;opacity:.7;letter-spacing:.04em}
+.cta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:20px;background:#fff1d6;color:#24124a;font-weight:800;font-stretch:112%;font-size:13px;letter-spacing:.12em}
+
+/* OCR overlay */
+.ob{position:absolute;border:1.5px dashed var(--amb);border-radius:3px;background:rgba(245,183,10,.06)}
+.ob.sel{border-style:solid;background:rgba(245,183,10,.08)}
+.ob.sel i{position:absolute;width:8px;height:8px;background:#fff;border:1.5px solid var(--amb);border-radius:1px}
+.ol{position:absolute;white-space:nowrap;font-family:var(--mono);font-size:10px;font-weight:600;line-height:18px;padding:0 6px;border-radius:4px;background:var(--amb);color:#141414;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.ol em{font-style:normal;font-weight:400;opacity:.7}
+.dim{position:absolute;white-space:nowrap;font-family:var(--mono);font-size:9.5px;line-height:16px;padding:0 5px;border-radius:3px;background:#141414;color:#fff}
+
+/* prompt bar */
+.prompt{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;width:560px;height:50px;background:#fff;border-radius:12px;box-shadow:0 0 0 1px var(--line2),0 12px 30px -8px rgba(0,0,0,.18);display:flex;align-items:center;gap:10px;padding:0 8px 0 14px}
+.prompt .g{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#f5b70a,#ff7a3d);display:grid;place-items:center}
+.prompt .g svg{width:13px;height:13px;stroke:#fff;stroke-width:2}
+.prompt .t{flex:1;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden}
+.prompt .t span{color:var(--tx3)}
+.zoomfloat{position:absolute;left:14px;bottom:12px;display:flex;gap:6px}
+.zoomfloat span{height:26px;padding:0 9px;display:flex;align-items:center;border-radius:7px;background:#fff;box-shadow:0 0 0 1px var(--line2);font-family:var(--mono);font-size:10.5px;color:var(--tx2)}
+
+/* filmstrip */
+.film{height:154px;border-top:1px solid var(--line);background:var(--bg);padding:10px 16px 14px}
+.film .fh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.film .fh b{font-size:12.5px;font-weight:650}
+.film .fh span{font-family:var(--mono);font-size:10.5px;color:var(--tx3)}
+.film .fh .btn{font-family:"Archivo",sans-serif;color:var(--ink);margin-left:auto;height:26px;font-size:11.5px;padding:0 10px}
+.vars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.vc{display:flex;gap:10px;padding:8px;border-radius:10px;background:#fff;box-shadow:0 0 0 1px var(--line);height:96px}
+.vc.on{box-shadow:0 0 0 2px var(--amb)}
+.th{width:64px;height:80px;border-radius:4px;flex:none;position:relative;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.th .s{position:absolute;width:40px;height:40px;left:12px;top:30px;border-radius:50%}
+.th .w{position:absolute;left:0;right:0;top:9px;text-align:center;font-family:"Anton";font-size:10.5px;line-height:1.02;letter-spacing:.01em}
+.th .h{position:absolute;left:0;right:0;top:56px;bottom:0}
+.th .c{position:absolute;right:5px;bottom:5px;width:20px;height:6px;border-radius:3px}
+.vm{display:flex;flex-direction:column;min-width:0;padding-top:1px}
+.vm b{font-size:12px;font-weight:650;white-space:nowrap}
+.vm small{font-family:var(--mono);font-size:10px;color:var(--tx3);white-space:nowrap}
+.st{margin-top:auto;display:inline-flex;align-self:flex-start;align-items:center;gap:5px;font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.st.ok{background:var(--okbg);color:var(--ok)}
+.st.am{background:var(--ambbg);color:var(--ambd)}
+.st.bl{background:#e8eefc;color:var(--blue)}
+
+/* inspector */
+.insp{grid-column:4;grid-row:3;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.itabs{display:flex;gap:4px;padding:8px 12px 0;border-bottom:1px solid var(--line)}
+.itabs span{padding:6px 10px 9px;font-size:12.5px;color:var(--tx3);font-weight:500;position:relative}
+.itabs span.on{color:var(--ink);font-weight:600}
+.itabs span.on::after{content:"";position:absolute;left:8px;right:8px;bottom:-1px;height:2px;background:var(--ink);border-radius:2px}
+.sec{padding:14px 14px 12px;border-bottom:1px solid var(--line)}
+.sh{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.sh b{font-size:12.5px;font-weight:650}
+.sh .m{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--tx3)}
+.ico{width:20px;height:20px;border-radius:5px;display:grid;place-items:center}
+.ico svg{width:13px;height:13px}
+.ocr{display:grid;grid-template-columns:1fr 64px 34px;align-items:center;gap:10px;height:28px;font-size:12px}
+.ocr .tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.ocr .tx em{font-style:normal;font-family:var(--mono);font-size:9.5px;color:var(--tx3);margin-right:6px}
+.cb{height:4px;border-radius:2px;background:#eeede8;overflow:hidden}
+.cb i{display:block;height:100%;background:var(--amb);border-radius:2px}
+.ocr .v{font-family:var(--mono);font-size:10.5px;text-align:right;color:var(--tx2)}
+.ocr.sel{background:var(--ambbg);margin:0 -8px;padding:0 8px;border-radius:6px;grid-template-columns:1fr 64px 34px}
+.chain{display:flex;flex-direction:column;gap:0;position:relative}
+.step{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:flex-start;padding:6px 0;position:relative}
+.step .sn{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:10px;font-weight:700;position:relative;z-index:1}
+.step:not(:last-child)::before{content:"";position:absolute;left:10.5px;top:28px;bottom:-6px;width:1px;background:var(--line2)}
+.step b{font-size:12.5px;font-weight:600;display:block;line-height:1.25}
+.step small{font-family:var(--mono);font-size:10px;color:var(--tx3)}
+.pill{font-family:var(--mono);font-size:9.5px;padding:2px 7px;border-radius:10px;white-space:nowrap;margin-top:2px}
+.cost{display:flex;align-items:flex-end;justify-content:space-between}
+.cost .big{font-family:var(--mono);font-size:24px;font-weight:600;letter-spacing:-.03em;line-height:1}
+.cost .big small{font-size:11px;color:var(--tx3);font-weight:400;letter-spacing:0;margin-left:4px}
+.spark{width:110px;height:32px}
+.ledger{margin-top:10px;padding:8px 10px;border-radius:8px;background:var(--sunk);font-family:var(--mono);font-size:10px;color:var(--tx2);line-height:1.6}
+.ledger .k{color:#8a3ffc}.ledger .s{color:var(--ok)}.ledger .n{color:var(--blue)}
+.lay{display:flex;align-items:center;gap:9px;height:28px;padding:0 8px;margin:0 -8px;border-radius:6px;font-size:12px;color:var(--ink)}
+.lay.on{background:var(--ambbg)}
+.lay svg{width:14px;height:14px;color:var(--tx3)}
+.lay .e{margin-left:auto;color:var(--tx4)}
+.lay .ind{width:12px}
+
+/* status */
+.status{grid-column:1/5;grid-row:4;display:flex;align-items:center;gap:18px;padding:0 14px;border-top:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:10.5px;color:var(--tx3);white-space:nowrap}
+.status b{font-weight:500;color:var(--tx2)}
+.status .r{margin-left:auto;display:flex;gap:18px}
+.status i.d{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--ok);margin-right:6px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="M5 3l14 7-6 1.8L10.5 18z"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 13V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V11M14 10V5.5a1.5 1.5 0 0 1 3 0V13M17 9.5a1.5 1.5 0 0 1 3 0V15a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.8-2.4L4.5 15.5a1.6 1.6 0 0 1 2.4-2L8 15"/></symbol>
+  <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v16h16M2 6h16v16"/></symbol>
+  <symbol id="i-type" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></symbol>
+  <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M7 9h10M7 12h7M7 15h9"/></symbol>
+  <symbol id="i-wand" viewBox="0 0 24 24"><path d="M4 20L15 9M13 7l4 4M18 2v3M18 9v0M21.5 5.5h-3M14.5 5.5h0M20 3l-1 1"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5v.7M12 17v.2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
+  <symbol id="i-rect" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/></symbol>
+  <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-chevd" viewBox="0 0 24 24"><path d="M8 10l4 4 4-4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/></symbol>
+</svg>
+
+<div class="app">
+  <!-- TOP BAR -->
+  <div class="top">
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24"><path d="M5 18L12 5l7 13" fill="none" stroke="#f5b70a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 13.5h7" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+      <b>AdPilot</b><small>Studio</small>
+    </div>
+    <div class="tabs">
+      <div class="tab on"><span class="ft" style="background:#d9452b">PDF</span>Q3_Campaign.pdf<span class="x">×</span></div>
+      <div class="tab"><span class="ft" style="background:#3a63d8">DOC</span>Brief.docx<span class="x">×</span></div>
+      <div class="tab"><span class="ft" style="background:#14a06a">XLS</span>Translations.xlsx<span class="x">×</span></div>
+      <div class="tab add">+</div>
+    </div>
+    <div class="r">
+      <span class="saved"><i></i>Saved · 4s ago</span>
+      <div class="avs">
+        <div class="av" style="background:#ffe2a3;color:#7a5600;margin-left:0">DM</div>
+        <div class="av" style="background:#d6e2ff;color:#2a4cb0">SL</div>
+        <div class="av" style="background:#ffd5cc;color:#a33620">AR</div>
+      </div>
+      <span class="btn"><svg class="i"><use href="#i-share"/></svg>Share</span>
+      <span class="btn ink">Export variants</span>
+    </div>
+  </div>
+
+  <!-- TOOL RAIL -->
+  <div class="rail">
+    <div class="tl"><svg class="i"><use href="#i-cursor"/></svg><span class="k">V</span></div>
+    <div class="tl"><svg class="i"><use href="#i-hand"/></svg><span class="k">H</span></div>
+    <div class="tl"><svg class="i"><use href="#i-crop"/></svg><span class="k">C</span></div>
+    <div class="tl"><svg class="i"><use href="#i-type"/></svg><span class="k">T</span></div>
+    <hr>
+    <div class="tl on"><svg class="i"><use href="#i-scan"/></svg><span class="k">O</span></div>
+    <div class="tl"><svg class="i"><use href="#i-wand"/></svg><span class="k">G</span></div>
+    <div class="tl"><svg class="i"><use href="#i-globe"/></svg><span class="k">L</span></div>
+    <hr>
+    <div class="tl"><svg class="i"><use href="#i-layers"/></svg></div>
+    <div class="tl"><svg class="i"><use href="#i-msg"/></svg></div>
+    <div class="tl b"><svg class="i"><use href="#i-help"/></svg></div>
+  </div>
+
+  <!-- SUB BAR -->
+  <div class="sub">
+    <div class="crumb">Q3 Campaign<svg class="i" style="width:12px;height:12px"><use href="#i-chev"/></svg>Page 2<svg class="i" style="width:12px;height:12px"><use href="#i-chev"/></svg><b>Hero creative · 4:5</b></div>
+    <div class="seg"><span class="on">Edit</span><span>Compare</span><span>Review</span></div>
+    <div class="mid">
+      <span class="tog"><span class="sw"></span>OCR overlay</span>
+      <span style="width:1px;height:20px;background:var(--line2)"></span>
+      <svg class="i" style="color:var(--tx2)"><use href="#i-undo"/></svg>
+      <svg class="i" style="color:var(--tx4)"><use href="#i-redo"/></svg>
+      <span class="zoom">72%<span>▾</span></span>
+    </div>
+  </div>
+
+  <!-- PAGES -->
+  <div class="pages">
+    <div class="ph">Pages<span>6 · in-browser</span></div>
+    <div class="pg"><span class="n">1</span><div class="pp"><div class="ln h"></div><div class="ln" style="width:90%"></div><div class="ln" style="width:80%"></div><div class="ln" style="width:86%"></div><div style="height:46px;border-radius:3px;background:#f1efe8;margin:4px 0"></div><div class="ln" style="width:92%"></div><div class="ln" style="width:60%"></div></div></div>
+    <div class="pg on"><span class="n">2</span><div class="pp" style="padding:8px;background:#fff"><div style="flex:1;border-radius:2px;background:linear-gradient(180deg,#24124a 0%,#4a1f5c 34%,#a4365e 58%,#f06a3e 70%,#1c1140 70.5%,#120b2e 100%);position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;top:9px;text-align:center;font-family:Anton;font-size:21px;color:#fff1d6;line-height:.9">SUMMER<br>SALE</div><div style="position:absolute;left:23px;top:34px;width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#ffe98a,#ff7a3d 62%,#ff3f6c)"></div><div style="position:absolute;right:8px;top:30px;width:20px;height:20px;border-radius:50%;background:#f5b70a"></div></div></div></div>
+    <div class="pg"><span class="n">3</span><div class="pp"><div class="ln h" style="width:50%"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:2px 0"><div style="height:38px;border-radius:2px;background:#2b7a6b"></div><div style="height:38px;border-radius:2px;background:#f2a33a"></div><div style="height:38px;border-radius:2px;background:#e64e3a"></div><div style="height:38px;border-radius:2px;background:#1f2a5c"></div></div><div class="ln" style="width:88%"></div><div class="ln" style="width:70%"></div></div></div>
+    <div class="pg"><span class="n">4</span><div class="pp"><div class="ln h" style="width:62%"></div><div class="ln"></div><div class="ln" style="width:94%"></div><div class="ln" style="width:82%"></div><div class="ln" style="width:90%"></div><div class="ln" style="width:40%"></div><div style="height:30px;border-radius:3px;background:#f1efe8;margin-top:4px"></div><div class="ln" style="width:76%"></div></div></div>
+    <div class="pg"><span class="n">5</span><div class="pp"><div class="ln h" style="width:44%"></div><div class="ln" style="width:86%"></div><div class="ln" style="width:72%"></div></div></div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas">
+    <div class="stage">
+      <div class="ab-title">Hero · Instagram feed<span>1080 × 1350</span></div>
+      <div class="abwrap">
+      <div class="ab">
+        <div class="glow"></div>
+        <div class="sunclip"><div class="sun"></div></div>
+        <div class="sea">
+          <i style="top:10px;width:250px;opacity:.55"></i>
+          <i style="top:22px;width:190px;opacity:.42"></i>
+          <i style="top:34px;width:136px;opacity:.32"></i>
+          <i style="top:46px;width:92px;opacity:.24"></i>
+          <i style="top:58px;width:54px;opacity:.18"></i>
+        </div>
+        <div class="brandrow"><b>NORTHWIND</b><span>Q3 · SUMMER DROP</span></div>
+        <div class="headline">SUMMER<br>SALE</div>
+        <svg class="shades" viewBox="0 0 300 104">
+          <defs>
+            <linearGradient id="lens" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b0f36"/><stop offset=".55" stop-color="#4b1d5a"/><stop offset="1" stop-color="#d2486a"/></linearGradient>
+            <linearGradient id="hl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          </defs>
+          <path d="M20 26 Q20 18 32 18 L128 18 Q141 18 139 32 L133 70 Q129 96 100 96 L58 96 Q29 96 24 70 Z" fill="url(#lens)" stroke="#120a22" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M280 26 Q280 18 268 18 L172 18 Q159 18 161 32 L167 70 Q171 96 200 96 L242 96 Q271 96 276 70 Z" fill="url(#lens)" stroke="#120a22" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M34 26 L74 26 L44 70 Z" fill="url(#hl)" opacity=".8"/>
+          <path d="M184 26 L224 26 L194 70 Z" fill="url(#hl)" opacity=".8"/>
+          <path d="M139 32 Q150 22 161 32" fill="none" stroke="#120a22" stroke-width="7" stroke-linecap="round"/>
+          <path d="M8 20 L292 20" stroke="#120a22" stroke-width="9" stroke-linecap="round"/>
+        </svg>
+        <div class="badge"><small>UP TO</small><b>40%</b><small>OFF</small></div>
+        <div class="bottom">
+          <div><b>Shades, swimwear &amp; more</b><span>ONLINE &amp; IN STORE · ENDS 31 AUG</span></div>
+          <span class="cta">SHOP NOW <svg class="i" style="width:15px;height:15px;stroke-width:2.4"><use href="#i-arrow"/></svg></span>
+        </div>
+      </div>
+
+      <!-- OCR boxes in artboard coords; scaled together with the artboard -->
+      <div style="position:absolute;left:0;top:0;width:456px;height:570px;pointer-events:none">
+        <div class="ob" style="left:18px;top:14px;width:104px;height:24px"></div>
+        <div class="ob sel" style="left:44px;top:42px;width:368px;height:192px"><i style="left:-5px;top:-5px"></i><i style="right:-5px;top:-5px"></i><i style="left:-5px;bottom:-5px"></i><i style="right:-5px;bottom:-5px"></i></div>
+        <div class="ol" style="left:44px;top:240px">OCR · 'SUMMER SALE' · 0.99</div>
+        <div class="dim" style="right:44px;top:240px">368 × 192</div>
+        <div class="ob" style="left:328px;top:310px;width:118px;height:118px;border-radius:50%"></div>
+        <div class="ol" style="left:306px;top:434px">OCR · '40% OFF' · 0.98</div>
+        <div class="ob" style="left:18px;top:494px;width:236px;height:50px"></div>
+        <div class="ol" style="left:18px;top:470px">OCR · 'Shades, swimwear…' · 0.96</div>
+        <div class="ob" style="left:268px;top:496px;width:174px;height:50px"></div>
+        <div class="ol" style="left:302px;top:552px">OCR · 'SHOP NOW' · 0.97</div>
+      </div>
+      </div>
+
+      <div class="prompt">
+        <span class="g"><svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg></span>
+        <span class="t">Replace headline with “FLASH SALE” <span>— keep type and colours</span></span>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--tx3)">⌘↵</span>
+        <span class="btn amb" style="height:34px">Apply edit</span>
+      </div>
+    </div>
+
+    <div class="film">
+      <div class="fh"><b>Variants</b><span>5 generated · 3 locales · Translations.xlsx</span><span class="btn"><svg class="i" style="width:14px;height:14px"><use href="#i-wand"/></svg>Generate more</span></div>
+      <div class="vars">
+        <div class="vc on">
+          <div class="th" style="background:linear-gradient(180deg,#24124a,#a4365e 60%,#120b2e 60.5%)"><div class="w" style="color:#fff1d6">SUMMER<br>SALE</div><div class="s" style="background:linear-gradient(180deg,#ffe98a,#ff7a3d,#ff3f6c)"></div><div class="c" style="background:#fff1d6"></div></div>
+          <div class="vm"><b>V1 · Master</b><small>en-GB · 4:5</small><small>$0.0042</small><span class="st am">● editing</span></div>
+        </div>
+        <div class="vc">
+          <div class="th" style="background:linear-gradient(180deg,#0e3b3a,#1f8a74 60%,#082423 60.5%)"><div class="w" style="color:#e9fff5">SOLDES<br>D'ÉTÉ</div><div class="s" style="background:linear-gradient(180deg,#fff6b0,#ffc84a,#ff8a3d)"></div><div class="c" style="background:#ffc84a"></div></div>
+          <div class="vm"><b>V2 · Lagoon</b><small>fr-FR · 4:5</small><small>$0.0039</small><span class="st ok">✓ approved</span></div>
+        </div>
+        <div class="vc">
+          <div class="th" style="background:linear-gradient(180deg,#fff1d6,#ffd9a8 60%,#f0643a 60.5%)"><div class="w" style="color:#24124a">REBAJAS<br>DE VERANO</div><div class="s" style="background:linear-gradient(180deg,#ff9b52,#ff3f6c)"></div><div class="c" style="background:#24124a"></div></div>
+          <div class="vm"><b>V3 · Sand</b><small>es-ES · 4:5</small><small>$0.0044</small><span class="st ok">✓ approved</span></div>
+        </div>
+        <div class="vc">
+          <div class="th" style="background:linear-gradient(180deg,#151515,#2b2b2b 60%,#0b0b0b 60.5%)"><div class="w" style="color:#f5b70a">SUMMER<br>SALE</div><div class="s" style="background:linear-gradient(180deg,#f5b70a,#e07a00)"></div><div class="c" style="background:#f5b70a"></div></div>
+          <div class="vm"><b>V4 · Noir</b><small>en-GB · 1:1</small><small>$0.0031</small><span class="st bl">◐ in review</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSPECTOR -->
+  <aside class="insp">
+    <div class="itabs"><span>Design</span><span class="on">Inspect</span><span>Comments 3</span></div>
+
+    <div class="sec">
+      <div class="sh"><span class="ico" style="background:var(--ambbg);color:var(--ambd)"><svg class="i"><use href="#i-scan"/></svg></span><b>Cloud Vision OCR</b><span class="m">6 blocks · 412 ms</span></div>
+      <div class="ocr sel"><span class="tx"><em>01</em>SUMMER SALE</span><span class="cb"><i style="width:99%"></i></span><span class="v">0.99</span></div>
+      <div class="ocr"><span class="tx"><em>02</em>40% OFF · UP TO</span><span class="cb"><i style="width:98%"></i></span><span class="v">0.98</span></div>
+      <div class="ocr"><span class="tx"><em>03</em>SHOP NOW</span><span class="cb"><i style="width:97%"></i></span><span class="v">0.97</span></div>
+      <div class="ocr"><span class="tx"><em>04</em>Shades, swimwear &amp; more</span><span class="cb"><i style="width:96%"></i></span><span class="v">0.96</span></div>
+      <div class="ocr"><span class="tx"><em>05</em>NORTHWIND</span><span class="cb"><i style="width:93%"></i></span><span class="v">0.93</span></div>
+      <div class="ocr"><span class="tx"><em>06</em>ONLINE &amp; IN STORE · ENDS 31 AUG</span><span class="cb"><i style="width:88%;background:#f0cf6a"></i></span><span class="v">0.88</span></div>
+    </div>
+
+    <div class="sec">
+      <div class="sh"><span class="ico" style="background:#efe9ff;color:#6b3fd6"><svg class="i"><use href="#i-wand"/></svg></span><b>Model: Gemini image</b><span class="m">fallback chain</span></div>
+      <div class="chain">
+        <div class="step"><span class="sn" style="background:var(--errbg);color:var(--err)">1</span><div><b>Gemini · primary region</b><small>429 rate-limited · retried ×2</small></div><span class="pill" style="background:var(--errbg);color:var(--err)">skipped</span></div>
+        <div class="step"><span class="sn" style="background:var(--okbg);color:var(--ok)">2</span><div><b>Gemini · secondary region</b><small>edit applied · 2.4 s · OCR mask</small></div><span class="pill" style="background:var(--okbg);color:var(--ok)">served</span></div>
+        <div class="step"><span class="sn" style="background:var(--sunk);color:var(--tx3)">3</span><div><b>Text overlay · deterministic</b><small>OCR boxes + brand font</small></div><span class="pill" style="background:var(--sunk);color:var(--tx3)">standby</span></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sh"><span class="ico" style="background:#e8eefc;color:var(--blue)"><svg class="i"><use href="#i-db"/></svg></span><b>Token cost</b><span class="m">this edit</span></div>
+      <div class="cost">
+        <div><div class="big">$0.0042</div><div style="font-family:var(--mono);font-size:10.5px;color:var(--tx3);margin-top:6px">1,186 in · 340 out tokens</div></div>
+        <svg class="spark" viewBox="0 0 110 32"><g fill="#e9e7e0"><rect x="0" y="18" width="8" height="14" rx="1.5"/><rect x="12" y="12" width="8" height="20" rx="1.5"/><rect x="24" y="20" width="8" height="12" rx="1.5"/><rect x="36" y="9" width="8" height="23" rx="1.5"/><rect x="48" y="15" width="8" height="17" rx="1.5"/><rect x="60" y="22" width="8" height="10" rx="1.5"/><rect x="72" y="11" width="8" height="21" rx="1.5"/><rect x="84" y="16" width="8" height="16" rx="1.5"/></g><rect x="96" y="7" width="8" height="25" rx="1.5" fill="#f5b70a"/></svg>
+      </div>
+      <div class="ledger"><span class="k">tracked in PostgreSQL</span> · usage_ledger<br>model=<span class="s">'gemini-image'</span> step=<span class="n">2</span> cost_usd=<span class="n">0.0042</span></div>
+    </div>
+
+    <div class="sec" style="border-bottom:0">
+      <div class="sh" style="margin-bottom:0"><span class="ico" style="background:var(--sunk);color:var(--tx2)"><svg class="i"><use href="#i-layers"/></svg></span><b>Layers</b><span class="m">8</span><svg class="i" style="width:14px;height:14px;color:var(--tx3)"><use href="#i-chev"/></svg></div>
+    </div>
+
+  </aside>
+
+  <!-- STATUS -->
+  <div class="status">
+    <span><i class="d"></i><b>Rendered in-browser</b></span>
+    <span>PDF · 6 pages · 2.8 MB</span>
+    <span>JSZip · 3 Blob URLs live</span>
+    <span>Cloud Translation v3 · 128-cell batches</span>
+    <span class="r"><span>Okta OIDC · role <b>Editor</b></span><span>FastAPI · 214 ms</span><span>React 19</span></span>
+  </div>
+</div>
+</body>
+</html>
