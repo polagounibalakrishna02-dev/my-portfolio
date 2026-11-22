@@ -1,6 +1,7 @@
 import { lazy, useEffect, useRef } from 'react'
 import { profile, stats } from '../data'
 import { gsap, useGSAP } from '../lib/gsap'
+import { asset } from '../lib/hd'
 import { scrollToTarget } from '../lib/smoothScroll'
 import { useInView } from '../lib/useInView'
 import { portrait } from '../three/state'
@@ -91,7 +92,11 @@ export default function Hero() {
       </div>
       <div className="hero__stage" aria-hidden="true">
         <SafeScene>
-          <Portrait url="/portrait/bala-v3.png" colorUrl="/portrait/bala-v3-color.webp" active={inView} />
+          <Portrait
+            url={asset('/portrait/bala-v3.png')}
+            colorUrl={asset('/portrait/bala-v3-color.webp')}
+            active={inView}
+          />
         </SafeScene>
       </div>
 
