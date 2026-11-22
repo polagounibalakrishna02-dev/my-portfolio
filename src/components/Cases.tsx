@@ -62,7 +62,8 @@ export default function Cases() {
         }
 
         gsap.set(cards, { transformOrigin: '50% 0%' })
-        gsap.set(cards.slice(1), { yPercent: 108 })
+        // parked fully below the stage, even on short screens where the card is a large share of it
+        gsap.set(cards.slice(1), { yPercent: 125 })
 
         const tl = gsap.timeline({
           defaults: { ease: 'none' },

@@ -190,6 +190,7 @@ main {
 }
 .bl {
   display: inline-block;
+  opacity: 0; /* hidden until the loader's timeline reveals each letter (no flash while fonts load) */
   transform-style: preserve-3d;
   background: linear-gradient(180deg, #ffffff 0%, #eef0f7 44%, #9ca4c4 100%);
   -webkit-background-clip: text;
@@ -645,9 +646,12 @@ html.has-cursor .cursor-ring {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding-top: 120px;
+  padding-top: clamp(84px, 13vh, 120px);
   overflow: hidden;
 }
+/* Hero type scales with the SHORTER of width and height: min(vw, vh) values below are equal at
+   1440×900, so wide-but-short laptop screens (e.g. 1255×593 at 150% Windows scaling) shrink
+   in proportion instead of pushing the buttons off-screen. */
 /* warm back light behind the portrait (like the old android's glow); it rims the dark silhouette */
 .hero__glow {
   position: absolute;
@@ -674,13 +678,14 @@ html.has-cursor .cursor-ring {
   z-index: 0;
   left: 0;
   right: 0;
-  top: clamp(96px, 13vh, 150px);
+  top: clamp(78px, 13vh, 150px);
   text-align: center;
   pointer-events: none;
 }
 .hero__back-word {
   display: inline-block;
-  font-size: 18.2vw;
+  translate: 8vw 0; /* right of centre: clear of the name, centred behind the portrait */
+  font-size: min(18.2vw, 29vh);
   line-height: 0.8;
   white-space: nowrap;
   background: linear-gradient(180deg, #ff4d1a 0%, #ff5a26 34%, rgba(255, 77, 26, 0.28) 72%, rgba(255, 77, 26, 0) 96%);
@@ -721,14 +726,14 @@ html.has-cursor .cursor-ring {
   grid-column: 1 / span 6;
 }
 .hero__hello {
-  margin-bottom: 18px;
+  margin-bottom: clamp(10px, 2vh, 18px);
   color: var(--text);
 }
 .hero__name {
   display: flex;
   flex-direction: column;
   margin: 0;
-  font-size: clamp(64px, 8vw, 146px);
+  font-size: clamp(64px, min(8vw, 12.8vh), 146px);
   line-height: 0.84;
   color: var(--text);
 }
@@ -741,14 +746,14 @@ html.has-cursor .cursor-ring {
 }
 .hero__role {
   width: fit-content;
-  margin: 22px 0 0;
-  font-size: clamp(24px, 2.3vw, 40px);
+  margin: clamp(12px, 2.4vh, 22px) 0 0;
+  font-size: clamp(24px, min(2.3vw, 3.7vh), 40px);
   line-height: 0.94;
   color: var(--accent);
 }
 .hero__intro {
   max-width: 470px;
-  margin: 22px 0 0;
+  margin: clamp(12px, 2.4vh, 22px) 0 0;
   font-size: 16px;
   line-height: 1.65;
   color: var(--dim);
@@ -758,14 +763,14 @@ html.has-cursor .cursor-ring {
   flex-wrap: wrap;
   gap: 12px;
   width: fit-content;
-  margin-top: 30px;
+  margin-top: clamp(16px, 3.3vh, 30px);
 }
 .hero__stats {
   grid-column: 10 / -1;
   justify-self: end;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: clamp(14px, 3.3vh, 30px);
   margin: 0;
   padding: 0 0 4px;
   list-style: none;
@@ -778,7 +783,7 @@ html.has-cursor .cursor-ring {
   gap: 8px;
 }
 .hero__stat-v {
-  font-size: clamp(48px, 4.6vw, 80px);
+  font-size: clamp(40px, min(4.6vw, 7.4vh), 80px);
   line-height: 0.85;
 }
 .hero__stat-l {
@@ -796,8 +801,8 @@ html.has-cursor .cursor-ring {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  margin-top: 46px;
-  padding-block: 18px 24px;
+  margin-top: clamp(18px, 5vh, 46px);
+  padding-block: clamp(10px, 2vh, 18px) clamp(12px, 2.7vh, 24px);
   border-top: 1px solid var(--line);
   font-family: var(--f-mono);
   font-size: 10.5px;
@@ -1788,8 +1793,8 @@ html.has-cursor .cursor-ring {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 104px;
-  padding-bottom: 32px;
+  padding-top: clamp(76px, 11.56vh, 104px);
+  padding-bottom: clamp(20px, 3.6vh, 32px);
 }
 .mloop__main {
   flex: 1;
@@ -1821,13 +1826,13 @@ html.has-cursor .cursor-ring {
 }
 .mloop__word {
   margin: 0;
-  font-size: clamp(72px, 9vw, 168px);
+  font-size: clamp(64px, min(9vw, 14.4vh), 168px);
   line-height: 0.88;
 }
 .mloop__text {
   max-width: 40ch;
-  margin: 24px 0 0;
-  font-size: 19px;
+  margin: clamp(14px, 2.7vh, 24px) 0 0;
+  font-size: clamp(16px, 2.1vh, 19px);
   line-height: 1.55;
   color: #d4d0c9;
 }
@@ -1853,7 +1858,9 @@ html.has-cursor .cursor-ring {
   position: relative;
   grid-column: 7 / -1;
   justify-self: end;
-  width: min(100%, calc(100vh - 400px));
+  /* what the title leaves of the pinned frame (500px at 900 tall, ~270px at 593), minus room
+     for the step labels drawn outside the circle */
+  width: min(100%, calc(75vh - 175px));
   aspect-ratio: 1;
 }
 .mring svg {
@@ -1959,6 +1966,60 @@ html.has-cursor .cursor-ring {
   cursor: pointer;
 }
 
+/* Desktop: one grid for the whole pinned frame. Title, step copy and hint stack in the left seven
+   columns; the ring (and the robot inside it) spans the frame's full height on the right, so it
+   is as tall as everything on the left at any screen height. */
+@media (min-width: 900px) {
+  .mloop__inner {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    column-gap: var(--col-gap);
+  }
+  .method__top {
+    grid-column: 1 / span 7;
+    grid-row: 1;
+    display: block;
+  }
+  .method__top .label {
+    margin-bottom: clamp(14px, 3vh, 28px);
+  }
+  .method__intro {
+    max-width: 62ch;
+    margin: clamp(10px, 2vh, 18px) 0 0;
+    font-size: clamp(15px, 1.9vh, 17px);
+  }
+  .mloop__main {
+    display: contents;
+  }
+  .mloop__copy {
+    grid-column: 1 / span 7;
+    grid-row: 2;
+    align-self: center;
+    padding-block: clamp(12px, 2.4vh, 24px);
+  }
+  .mloop__hint {
+    grid-column: 1 / span 7;
+    grid-row: 3;
+  }
+  .mring {
+    grid-column: 7 / -1; /* shares column 7 with the copy's area, but sits right-aligned clear of the text */
+    grid-row: 1 / -1;
+    align-self: center;
+    justify-self: end;
+    width: min(100%, calc(100vh - clamp(76px, 11.56vh, 104px) - clamp(20px, 3.6vh, 32px)));
+  }
+}
+/* short laptop screens: the step copy needs every pixel, the scroll hint can go */
+@media (min-width: 900px) and (max-height: 700px) {
+  .mloop__hint {
+    display: none;
+  }
+  .mloop__copy {
+    padding-block: 10px 0;
+  }
+}
+
 /* phones: plain list */
 .mlist__agent {
   width: min(86vw, 420px);
@@ -2020,7 +2081,7 @@ html.has-cursor .cursor-ring {
   font-size: clamp(54px, 6.2vw, 116px);
 }
 .method__title {
-  font-size: clamp(60px, 7.4vw, 136px);
+  font-size: clamp(60px, min(7.4vw, 11.84vh), 136px);
 }
 .method__title span,
 .method__stack-title span {
@@ -2476,6 +2537,9 @@ html.has-cursor .cursor-ring {
   }
   .hero__back {
     top: 96px;
+  }
+  .hero__back-word {
+    translate: none;
   }
   .hero__content {
     grid-template-columns: 1fr;

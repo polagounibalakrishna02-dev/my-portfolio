@@ -116,8 +116,15 @@ export default function Boot({ onDone }: { onDone: () => void }) {
           .call(finish, [], t1 + 1.12)
       }
 
-      if (document.fonts) document.fonts.ready.then(start)
-      else start()
+      // Both loader typefaces must be in before we measure and animate: Archivo for the name,
+      // Anton for AI ENGINEER. On a slow connection, start anyway after 3 s rather than stall.
+      const fonts = document.fonts
+        ? Promise.all([
+            document.fonts.load('800 100px "Archivo Variable"', NAME),
+            document.fonts.load('400 100px Anton', NEXT),
+          ]).then(() => document.fonts.ready)
+        : Promise.resolve()
+      Promise.race([fonts, new Promise((r) => window.setTimeout(r, 3000))]).then(start, start)
     },
     { scope: root },
   )
